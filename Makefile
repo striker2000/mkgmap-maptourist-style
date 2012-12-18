@@ -1,5 +1,6 @@
 
-INPUT?=		input/example.osm.pbf
+REGION?=	RU-MOS
+INPUT?=		input/${REGION}.osm.pbf
 
 STYLE?=		config
 TYP?=       M00001e0.TYP
@@ -8,10 +9,14 @@ PAD?=		00000000
 MAPID?=		${shell echo ${ID}${PAD} | cut -c1-8}
 
 OSMOSIS?=	bin/osmosis
-SPLITTER?=	java -Xmx1500m -jar bin/splitter.jar
-MKGMAP?=	java -Xmx1500m -jar bin/mkgmap.jar
+SPLITTER?=	java -Xmx750m -jar bin/splitter.jar
+MKGMAP?=	java -Xmx750m -jar bin/mkgmap.jar
 
-all: bounds split convert
+all: download bounds split convert
+
+download:
+	mkdir -p input
+	cd input && wget -N http://data.gis-lab.info/osm_dump/dump/latest/${REGION}.osm.pbf
 
 bounds:
 	mkdir -p boundary
@@ -56,11 +61,9 @@ convert:
 		--overview-mapname="OSM_MapTourist" \
 		--area-name="OSM `date "+%Y-%m-%d"`" \
 		--family-id=${ID} \
-		--keep-going \
 		--read-config=optionsfile.args \
 		--style-file=${STYLE} \
 		--style=${STYLE} \
-		--gmapsupp \
 		-c splitted/template.args ${STYLE}/${TYP}
 
 	# copy typ file for qlandkartegt
